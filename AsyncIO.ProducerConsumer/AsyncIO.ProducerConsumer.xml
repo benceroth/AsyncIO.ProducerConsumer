@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AsyncIO.ProducerConsumer</name>
+    </assembly>
+    <members>
+        <member name="T:AsyncIO.ProducerConsumer.Factories.IConsumerFactory">
+            <summary>
+            Provides interface for a factory that creates consumers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Factories.IConsumerFactory.GetConsumer">
+            <summary>
+            Creates a consumer.
+            </summary>
+            <returns>Item.</returns>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Factories.IProducerFactory">
+            <summary>
+            Provides an interface for a factory that creates producers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Factories.IProducerFactory.GetProducer">
+            <summary>
+            Creates a producer.
+            </summary>
+            <returns>Producer.</returns>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Mediator">
+            <summary>
+            Mediator that handles all communications between producers and consumers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Mediator.#ctor(AsyncIO.ProducerConsumer.Factories.IProducerFactory,AsyncIO.ProducerConsumer.Factories.IConsumerFactory,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AsyncIO.ProducerConsumer.Mediator"/> class.
+            </summary>
+            <param name="producerFactory">Producer factory that creates producers.</param>
+            <param name="consumerFactory">Consumer factory that creates consumers.</param>
+            <param name="logger">Injectable logger.</param>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Mediator.#ctor(System.Collections.Generic.IEnumerable{AsyncIO.ProducerConsumer.Roles.IProducer},System.Collections.Generic.IEnumerable{AsyncIO.ProducerConsumer.Roles.IConsumer},Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AsyncIO.ProducerConsumer.Mediator"/> class.
+            </summary>
+            <param name="producers">Producers.</param>
+            <param name="consumers">Consumers.</param>
+            <param name="logger">Injectable logger.</param>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Mediator.Configuration">
+            <summary>
+            Gets configuration.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Mediator.Start">
+            <summary>
+            Starts processing.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Mediator.Stop">
+            <summary>
+            Stops processing.
+            </summary>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Models.Configuration">
+            <summary>
+            Provides configurable information about the mediator.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.LogName">
+            <summary>
+            Gets or sets logging name.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.LogPerfomance">
+            <summary>
+            Gets or sets a value indicating whether log perfomance.
+            Changes only take effect on start.
+            Defaults to false.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.LogPerfomanceMs">
+            <summary>
+            Gets or sets logging interval in milliseconds.
+            Changes only take effect on start.
+            Defaults to 250.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.MaxBufferedElements">
+            <summary>
+            Gets or sets maximum amount of buffered items.
+            Changes only take effect on start.
+            Defaults to 1.000.000 elements.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.ProducerCount">
+            <summary>
+            Gets or sets maximum amount of producer.
+            Changes only take effect on start.
+            Defaults to environment processor count.
+            </summary>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.Configuration.ConsumerCount">
+            <summary>
+            Gets or sets maximum amount of consumers.
+            Changes only take effect on start.
+            Defaults to environment processor count.
+            </summary>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer">
+            <summary>
+            Provides a buffer producers consumers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer"/> class.
+            </summary>
+            <param name="maxBufferedElements">Maximum amount of elements that can be stored in the buffer.</param>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer.Count">
+            <summary>
+            Gets element count in the buffer.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer.GetItem">
+            <summary>
+            Gets an item from the buffer.
+            </summary>
+            <returns>Item.</returns>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Models.ProducerConsumerBuffer.AddItem(System.Object)">
+            <summary>
+            Adds an item to the buffer.
+            </summary>
+            <param name="item">Item.</param>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Roles.IConsumer">
+            <summary>
+            Provides interface for consumers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Roles.IConsumer.Consume(System.Object)">
+            <summary>
+            Consumes an item.
+            </summary>
+            <param name="item">Item.</param>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Roles.IConsumer.CanConsume(System.Object)">
+            <summary>
+            Decides whether item can be consumed, otherwise discarded.
+            </summary>
+            <param name="item">Item.</param>
+            <returns>Indicating whether item can be consumed or discarded.</returns>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Roles.IProducer">
+            <summary>
+            Provides interface for producers.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Roles.IProducer.Produce">
+            <summary>
+            Produces an item.
+            </summary>
+            <returns>Item.</returns>
+        </member>
+        <member name="T:AsyncIO.ProducerConsumer.Scheduler">
+            <summary>
+            Producer-Consumer scheduler.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Scheduler.#ctor(AsyncIO.ProducerConsumer.Factories.IProducerFactory,AsyncIO.ProducerConsumer.Factories.IConsumerFactory,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AsyncIO.ProducerConsumer.Scheduler"/> class.
+            </summary>
+            <param name="producerFactory">Producer factory that creates producers.</param>
+            <param name="consumerFactory">Consumer factory that creates consumers.</param>
+            <param name="logger">Injectable logger.</param>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Scheduler.#ctor(System.Collections.Generic.IEnumerable{AsyncIO.ProducerConsumer.Roles.IProducer},System.Collections.Generic.IEnumerable{AsyncIO.ProducerConsumer.Roles.IConsumer},Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AsyncIO.ProducerConsumer.Scheduler"/> class.
+            </summary>
+            <param name="producers">Producers.</param>
+            <param name="consumers">Consumers.</param>
+            <param name="logger">Injectable logger.</param>
+        </member>
+        <member name="P:AsyncIO.ProducerConsumer.Scheduler.Configuration">
+            <summary>
+            Gets configuration.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Scheduler.Start">
+            <summary>
+            Starts scheduler.
+            </summary>
+        </member>
+        <member name="M:AsyncIO.ProducerConsumer.Scheduler.Stop">
+            <summary>
+            Stops scheduler.
+            </summary>
+        </member>
+    </members>
+</doc>
