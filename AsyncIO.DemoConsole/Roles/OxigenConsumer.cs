@@ -3,17 +3,13 @@ using AsyncIO.ProducerConsumer.Roles;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
 {
-    class OxigenConsumer : IConsumer
+    class OxigenConsumer : Consumer<Oxigen>
     {
-        bool IConsumer.CanConsume(object item)
-        {
-            return item is Oxigen;
-        }
-
-        void IConsumer.Consume(object item)
+        public override void Consume(Oxigen item, CancellationToken token)
         {
         }
     }

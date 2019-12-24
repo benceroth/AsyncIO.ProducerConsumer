@@ -3,17 +3,13 @@ using AsyncIO.ProducerConsumer.Roles;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
 {
-    class WaterConsumer : IConsumer
+    class WaterConsumer : Consumer<Water>
     {
-        bool IConsumer.CanConsume(object item)
-        {
-            return item is Water;
-        }
-
-        void IConsumer.Consume(object item)
+        public override void Consume(Water item, CancellationToken token)
         {
         }
     }

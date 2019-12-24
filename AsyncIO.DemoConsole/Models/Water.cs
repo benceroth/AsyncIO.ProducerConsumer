@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AsyncIO.DemoConsole.Models
 {
-    class Water
+    class Water : Element
     {
     }
 }

@@ -17,7 +17,7 @@ namespace AsyncIO.DemoConsole
     {
         static Microsoft.Extensions.Logging.ILogger Logger;
 
-        static void Main(string[] args)
+        static void Main()
         {
             Logger = new SerilogLogger(
                 new LoggerConfiguration()
@@ -25,8 +25,8 @@ namespace AsyncIO.DemoConsole
                     .WriteTo.Console()
                     .CreateLogger());
 
-            //StartSimpleMediator();
             StartLinkedMediator();
+            StartSimpleMediator();
             Console.ReadKey();
         }
 
@@ -39,6 +39,8 @@ namespace AsyncIO.DemoConsole
             mediator.Configuration.ProducerCount = 6;
             mediator.Configuration.ConsumerCount = 600;
             mediator.Configuration.MaxBufferedElements = 1000000;
+
+            mediator.OnCompleted += Mediator_OnCompleted;
             mediator.Start();
 
             Task.Run(() =>
@@ -50,6 +52,7 @@ namespace AsyncIO.DemoConsole
 
         static void StartLinkedMediator()
         {
+            // While this working on most runs, there is a chance for starvation when hidrogens produce too fast shutting out oxigen. It can happen as well when you run too much tasks, and buffer is filled before oxigen could produce. To avoid this, use separated mediators for different types.
             var producers = new IProducer[] { new HidrogenProducer(), new HidrogenProducer(), new OxigenProducer() };
             var consumers = new IConsumer[] { new WaterProducer(), new WaterProducer(), new WaterProducer() };
 
@@ -81,8 +84,14 @@ namespace AsyncIO.DemoConsole
             mediator.Configuration.ProducerCount = 6;
             mediator.Configuration.ConsumerCount = 600;
             mediator.Configuration.MaxBufferedElements = 1000000;
-
+            mediator.OnCompleted += Mediator_OnCompleted;
             return mediator;
+        }
+
+        private static void Mediator_OnCompleted(object sender, EventArgs e)
+        {
+            var mediator = sender as Mediator;
+            Console.WriteLine($"Completed {mediator.Configuration.LogName}");
         }
     }
 }

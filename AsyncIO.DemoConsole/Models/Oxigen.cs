@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AsyncIO.DemoConsole.Models
 {
-    class Oxigen
+    class Oxigen : Element
     {
     }
 }

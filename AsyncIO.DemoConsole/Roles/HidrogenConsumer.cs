@@ -4,17 +4,13 @@ using AsyncIO.DemoConsole.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
 {
-    class HidrogenConsumer : IConsumer
+    class HidrogenConsumer : Consumer<Hidrogen>
     {
-        bool IConsumer.CanConsume(object item)
-        {
-            return item is Hidrogen;
-        }
-
-        void IConsumer.Consume(object item)
+        public override void Consume(Hidrogen item, CancellationToken token)
         {
         }
     }

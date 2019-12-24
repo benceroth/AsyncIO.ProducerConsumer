@@ -7,9 +7,9 @@ using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
 {
-    class OxigenProducer : IProducer
+    class OxigenProducer : Producer<Oxigen>
     {
-        object IProducer.Produce()
+        public override Oxigen Produce(CancellationToken token)
         {
             return new Oxigen();
         }
