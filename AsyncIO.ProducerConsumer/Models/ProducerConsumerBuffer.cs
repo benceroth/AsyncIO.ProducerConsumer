@@ -4,7 +4,9 @@
 
 namespace AsyncIO.ProducerConsumer.Models
 {
+    using System;
     using System.Collections.Concurrent;
+    using System.Threading;
 
     /// <summary>
     /// Provides a buffer producers consumers.
@@ -31,18 +33,33 @@ namespace AsyncIO.ProducerConsumer.Models
         /// Gets an item from the buffer.
         /// </summary>
         /// <returns>Item.</returns>
-        internal object GetItem()
+        /// <param name="token">Cancellation token.</param>
+        internal object GetItem(CancellationToken token)
         {
-            return this.requests.Take();
+            try
+            {
+                return this.requests.Take(token);
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
         }
 
         /// <summary>
         /// Adds an item to the buffer.
         /// </summary>
         /// <param name="item">Item.</param>
-        internal void AddItem(object item)
+        /// <param name="token">Cancellation token.</param>
+        internal void AddItem(object item, CancellationToken token)
         {
-            this.requests.Add(item);
+            try
+            {
+                this.requests.Add(item, token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
     }
 }

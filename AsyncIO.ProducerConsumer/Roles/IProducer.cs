@@ -4,15 +4,24 @@
 
 namespace AsyncIO.ProducerConsumer.Roles
 {
+    using System;
+    using System.Threading;
+
     /// <summary>
     /// Provides interface for producers.
     /// </summary>
     public interface IProducer
     {
         /// <summary>
+        /// Event that fires when producing completed.
+        /// </summary>
+        event EventHandler OnCompleted;
+
+        /// <summary>
         /// Produces an item.
         /// </summary>
         /// <returns>Item.</returns>
-        object Produce();
+        /// <param name="token">Cancellation token.</param>
+        object Produce(CancellationToken token);
     }
 }

@@ -4,16 +4,25 @@
 
 namespace AsyncIO.ProducerConsumer.Roles
 {
+    using System.Threading;
+    using AsyncIO.ProducerConsumer.Models;
+
     /// <summary>
     /// Provides interface for consumers.
     /// </summary>
     public interface IConsumer
     {
         /// <summary>
+        /// Gets or sets consumer state.
+        /// </summary>
+        ConsumerState State { get; set; }
+
+        /// <summary>
         /// Consumes an item.
         /// </summary>
         /// <param name="item">Item.</param>
-        void Consume(object item);
+        /// <param name="token">Cancellation token.</param>
+        void Consume(object item, CancellationToken token);
 
         /// <summary>
         /// Decides whether item can be consumed, otherwise discarded.

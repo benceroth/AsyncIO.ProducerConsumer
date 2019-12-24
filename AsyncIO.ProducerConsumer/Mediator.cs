@@ -30,6 +30,7 @@ namespace AsyncIO.ProducerConsumer
             consumerFactory = consumerFactory ?? throw new ArgumentNullException(nameof(consumerFactory));
 
             this.scheduler = new Scheduler(producerFactory, consumerFactory, logger);
+            this.scheduler.OnCompleted += this.Scheduler_OnCompleted;
         }
 
         /// <summary>
@@ -44,7 +45,13 @@ namespace AsyncIO.ProducerConsumer
             consumers = consumers ?? throw new ArgumentNullException(nameof(consumers));
 
             this.scheduler = new Scheduler(producers, consumers, logger);
+            this.scheduler.OnCompleted += this.Scheduler_OnCompleted;
         }
+
+        /// <summary>
+        /// Event that fires when producers consumers completed.
+        /// </summary>
+        public event EventHandler OnCompleted;
 
         /// <summary>
         /// Gets configuration.
@@ -65,6 +72,11 @@ namespace AsyncIO.ProducerConsumer
         public void Stop()
         {
             this.scheduler.Stop();
+        }
+
+        private void Scheduler_OnCompleted(object sender, EventArgs e)
+        {
+            this.OnCompleted?.Invoke(this, e);
         }
     }
 }
