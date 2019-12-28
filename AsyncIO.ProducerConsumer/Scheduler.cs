@@ -173,13 +173,11 @@ namespace AsyncIO.ProducerConsumer
 
                 this.consumers
                     .AsParallel()
-                    .WithDegreeOfParallelism(this.consumers.Count())
                     .Select(x => this.StartConsumer(x, buffer, token).ConfigureAwait(false))
                     .ToList();
 
                 this.producers
                     .AsParallel()
-                    .WithDegreeOfParallelism(this.producers.Count())
                     .Select(x => this.StartProducer(x, buffer, token).ConfigureAwait(false))
                     .ToList();
             }).ConfigureAwait(false);
@@ -192,12 +190,9 @@ namespace AsyncIO.ProducerConsumer
                 if (await producer.Produce(token) is object item)
                 {
                     buffer.AddItem(item, token);
-                    if (this.Configuration.LogPerfomance)
-                    {
-                        Interlocked.Increment(ref this.producerCount);
-                    }
+                    Interlocked.Increment(ref this.producerCount);
                 }
-                else if (this.Configuration.LogPerfomance)
+                else
                 {
                     Interlocked.Increment(ref this.discardProducerCount);
                 }
@@ -212,12 +207,9 @@ namespace AsyncIO.ProducerConsumer
                 if (consumer.CanConsume(item))
                 {
                     consumer.Consume(item, token);
-                    if (this.Configuration.LogPerfomance)
-                    {
-                        Interlocked.Increment(ref this.consumerCount);
-                    }
+                    Interlocked.Increment(ref this.consumerCount);
                 }
-                else if (this.Configuration.LogPerfomance)
+                else
                 {
                     Interlocked.Increment(ref this.discardConsumerCount);
                 }
@@ -235,7 +227,8 @@ namespace AsyncIO.ProducerConsumer
         private void DetectCompletion(ProducerConsumerBuffer buffer, CancellationToken token)
         {
             while ((this.producers.Any(x => x.ProducerState != State.Completed) ||
-                    (buffer.Count > 0 && this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
+                    (this.producerCount > this.consumerCount + this.discardConsumerCount &&
+                    this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
                 !token.IsCancellationRequested)
             {
                 Thread.Sleep(1);
@@ -282,7 +275,8 @@ namespace AsyncIO.ProducerConsumer
                 perConsumer, perConsumerDiscard;
 
             while ((this.producers.Any(x => x.ProducerState != State.Completed) ||
-                    (buffer.Count > 0 && this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
+                    (this.producerCount > this.consumerCount + this.discardConsumerCount &&
+                    this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
                 !token.IsCancellationRequested)
             {
                 lastProducer = this.producerCount;
