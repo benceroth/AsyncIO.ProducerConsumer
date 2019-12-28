@@ -26,7 +26,7 @@ namespace AsyncIO.DemoConsole
                     .CreateLogger());
 
             StartLinkedMediator();
-            StartSimpleMediator();
+            //StartSimpleMediator();
             Console.ReadKey();
         }
 
@@ -38,7 +38,6 @@ namespace AsyncIO.DemoConsole
             mediator.Configuration.LogPerfomanceMs = 250;
             mediator.Configuration.ProducerCount = 6;
             mediator.Configuration.ConsumerCount = 600;
-            mediator.Configuration.MaxBufferedElements = 1000000;
 
             mediator.OnCompleted += Mediator_OnCompleted;
             mediator.Start();
@@ -52,9 +51,8 @@ namespace AsyncIO.DemoConsole
 
         static void StartLinkedMediator()
         {
-            // While this working on most runs, there is a chance for starvation when hidrogens produce too fast shutting out oxigen. It can happen as well when you run too much tasks, and buffer is filled before oxigen could produce. To avoid this, use separated mediators for different types.
             var producers = new IProducer[] { new HidrogenProducer(), new HidrogenProducer(), new OxigenProducer() };
-            var consumers = new IConsumer[] { new WaterProducer(), new WaterProducer(), new WaterProducer() };
+            var consumers = Enumerable.Range(0, 10).Select(x => new WaterProducer()).ToList();
 
             var producers2 = consumers.Select(x => x as IProducer);
             var consumers2 = new IConsumer[] { new WaterConsumer() };
@@ -70,7 +68,7 @@ namespace AsyncIO.DemoConsole
 
             Task.Run(async () =>
             {
-                await Task.Delay(5000);
+                await Task.Delay(15000);
                 mediator.Stop();
                 mediator2.Stop();
             });
@@ -80,10 +78,7 @@ namespace AsyncIO.DemoConsole
         {
             var mediator = new Mediator(producers, consumers, Logger);
             mediator.Configuration.LogPerfomance = true;
-            mediator.Configuration.LogPerfomanceMs = 250;
-            mediator.Configuration.ProducerCount = 6;
-            mediator.Configuration.ConsumerCount = 600;
-            mediator.Configuration.MaxBufferedElements = 1000000;
+            mediator.Configuration.LogPerfomanceMs = 1000;
             mediator.OnCompleted += Mediator_OnCompleted;
             return mediator;
         }

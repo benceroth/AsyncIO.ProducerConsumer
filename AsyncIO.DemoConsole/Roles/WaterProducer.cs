@@ -1,16 +1,19 @@
 ﻿using AsyncIO.DemoConsole.Models;
+using AsyncIO.ProducerConsumer.Models;
 using AsyncIO.ProducerConsumer.Roles;
+using HellBrick.Collections;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AsyncIO.DemoConsole.Roles
 {
     class WaterProducer : ProducerConsumer<Water, Element>
     {
-        private int oxigenCount = 0;
-        private int hidrogenCount = 0;
+        private readonly AsyncQueue<Oxigen> oxigens = new AsyncQueue<Oxigen>();
+        private readonly AsyncQueue<Hidrogen> hidrogens = new AsyncQueue<Hidrogen>();
 
         public override bool CanConsume(object item)
         {
@@ -19,32 +22,37 @@ namespace AsyncIO.DemoConsole.Roles
 
         public override void Consume(Element item, CancellationToken token)
         {
-            if (item is Oxigen)
+            if (item is Oxigen oxigen)
             {
-                Interlocked.Increment(ref oxigenCount);
+                this.oxigens.Add(oxigen);
             }
-            else if (item is Hidrogen)
+            else if (item is Hidrogen hidrogen)
             {
-                Interlocked.Increment(ref hidrogenCount);
+                this.hidrogens.Add(hidrogen);
             }
         }
 
-        public override Water Produce(CancellationToken token)
+        public override void Finish()
         {
-            while(oxigenCount < 1 || hidrogenCount < 2)
+            this.oxigens.Add(null);
+            this.hidrogens.Add(null);
+        }
+
+        public override async Task<Water> Produce(CancellationToken token)
+        {
+            if(await this.oxigens.TakeAsync(token) is Oxigen)
             {
-                if (token.IsCancellationRequested)
+                if(await this.hidrogens.TakeAsync(token) is Hidrogen)
                 {
-                    return null;
+                    if (await this.hidrogens.TakeAsync(token) is Hidrogen)
+                    {
+                        return new Water();
+                    }
                 }
-                Thread.Sleep(1);
             }
 
-            Interlocked.Decrement(ref oxigenCount);
-            Interlocked.Decrement(ref hidrogenCount);
-            Interlocked.Decrement(ref hidrogenCount);
-
-            return new Water();
+            this.ProducerState = State.Completed;
+            return null;
         }
     }
 }

@@ -4,14 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AsyncIO.DemoConsole.Roles
 {
     class HidrogenProducer : Producer<Hidrogen>
     {
-        public override Hidrogen Produce(CancellationToken token)
+        public override Task<Hidrogen> Produce(CancellationToken token)
         {
-            return new Hidrogen();
+            return Task.FromResult(new Hidrogen());
         }
     }
 }

@@ -20,7 +20,7 @@ namespace AsyncIO.DemoConsole.Factories
             {
                 0 => new HidrogenProducer(),
                 1 => new OxigenProducer(),
-                //2 => new WaterProducer(),
+                2 => new WaterProducer(),
                 _ => throw new InvalidOperationException(),
             };
         }

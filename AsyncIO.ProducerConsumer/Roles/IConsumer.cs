@@ -5,6 +5,7 @@
 namespace AsyncIO.ProducerConsumer.Roles
 {
     using System.Threading;
+    using System.Threading.Tasks;
     using AsyncIO.ProducerConsumer.Models;
 
     /// <summary>
@@ -15,7 +16,14 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// <summary>
         /// Gets or sets consumer state.
         /// </summary>
-        ConsumerState State { get; set; }
+        State ConsumerState { get; set; }
+
+        /// <summary>
+        /// Decides whether item can be consumed, otherwise discarded.
+        /// </summary>
+        /// <param name="item">Item.</param>
+        /// <returns>Indicating whether item can be consumed or discarded.</returns>
+        bool CanConsume(object item);
 
         /// <summary>
         /// Consumes an item.
@@ -25,10 +33,8 @@ namespace AsyncIO.ProducerConsumer.Roles
         void Consume(object item, CancellationToken token);
 
         /// <summary>
-        /// Decides whether item can be consumed, otherwise discarded.
+        /// Finishes consuming.
         /// </summary>
-        /// <param name="item">Item.</param>
-        /// <returns>Indicating whether item can be consumed or discarded.</returns>
-        bool CanConsume(object item);
+        void Finish();
     }
 }

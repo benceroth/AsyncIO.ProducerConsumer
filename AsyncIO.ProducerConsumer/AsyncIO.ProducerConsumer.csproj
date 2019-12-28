@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>AsyncIO.ProducerConsumer</AssemblyName>
     <RootNamespace>AsyncIO.ProducerConsumer</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>A library that provides async configurable producer consumer chaining.</Description>
+    <Description>A library that provides async configurable producer consumer chaining with callbacks and base classes.</Description>
     <Authors>Ritor42</Authors>
     <PackageProjectUrl>https://github.com/Ritor42/AsyncIO.ProducerConsumer</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Ritor42/AsyncIO.ProducerConsumer</RepositoryUrl>
@@ -13,6 +13,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <PackageTags>csharp, dotnet, async, parallel, multi-threading, producer, consumer, producer-consumer, pattern</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncCollections" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>

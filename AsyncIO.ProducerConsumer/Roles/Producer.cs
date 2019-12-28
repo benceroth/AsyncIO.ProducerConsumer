@@ -8,17 +8,19 @@ namespace AsyncIO.ProducerConsumer.Roles
     using System.Collections.Generic;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
+    using AsyncIO.ProducerConsumer.Models;
 
     /// <inheritdoc />
     public abstract class Producer<TProduce> : IProducer
     {
         /// <inheritdoc />
-        public event EventHandler OnCompleted;
+        public State ProducerState { get; set; } = State.Busy;
 
         /// <inheritdoc />
-        object IProducer.Produce(CancellationToken token)
+        async Task<object> IProducer.Produce(CancellationToken token)
         {
-            return this.Produce(token);
+            return await this.Produce(token);
         }
 
         /// <summary>
@@ -26,6 +28,6 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// </summary>
         /// <returns>Item.</returns>
         /// <param name="token">Cancellation token.</param>
-        public abstract TProduce Produce(CancellationToken token);
+        public abstract Task<TProduce> Produce(CancellationToken token);
     }
 }

@@ -31,13 +31,6 @@ namespace AsyncIO.ProducerConsumer.Models
         public int LogPerfomanceMs { get; set; } = 250;
 
         /// <summary>
-        /// Gets or sets maximum amount of buffered items.
-        /// Changes only take effect on start.
-        /// Defaults to 1.000.000 elements.
-        /// </summary>
-        public int MaxBufferedElements { get; set; } = 1000000;
-
-        /// <summary>
         /// Gets or sets maximum amount of producer.
         /// Changes only take effect on start.
         /// Defaults to environment processor count.

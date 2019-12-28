@@ -12,5 +12,9 @@ namespace AsyncIO.DemoConsole.Roles
         public override void Consume(Water item, CancellationToken token)
         {
         }
+
+        public override void Finish()
+        {
+        }
     }
 }

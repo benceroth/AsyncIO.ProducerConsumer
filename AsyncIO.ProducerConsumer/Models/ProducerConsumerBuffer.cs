@@ -7,21 +7,22 @@ namespace AsyncIO.ProducerConsumer.Models
     using System;
     using System.Collections.Concurrent;
     using System.Threading;
+    using System.Threading.Tasks;
+    using HellBrick.Collections;
 
     /// <summary>
     /// Provides a buffer producers consumers.
     /// </summary>
     internal class ProducerConsumerBuffer
     {
-        private readonly BlockingCollection<object> requests;
+        private readonly AsyncQueue<object> requests;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProducerConsumerBuffer"/> class.
         /// </summary>
-        /// <param name="maxBufferedElements">Maximum amount of elements that can be stored in the buffer.</param>
-        internal ProducerConsumerBuffer(int maxBufferedElements)
+        internal ProducerConsumerBuffer()
         {
-            this.requests = new BlockingCollection<object>(maxBufferedElements);
+            this.requests = new AsyncQueue<object>();
         }
 
         /// <summary>
@@ -34,11 +35,11 @@ namespace AsyncIO.ProducerConsumer.Models
         /// </summary>
         /// <returns>Item.</returns>
         /// <param name="token">Cancellation token.</param>
-        internal object GetItem(CancellationToken token)
+        internal async Task<object> GetItem(CancellationToken token)
         {
             try
             {
-                return this.requests.Take(token);
+                return await this.requests.TakeAsync(token);
             }
             catch (OperationCanceledException)
             {
@@ -53,13 +54,7 @@ namespace AsyncIO.ProducerConsumer.Models
         /// <param name="token">Cancellation token.</param>
         internal void AddItem(object item, CancellationToken token)
         {
-            try
-            {
-                this.requests.Add(item, token);
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            this.requests.Add(item);
         }
     }
 }

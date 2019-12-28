@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncIO.ProducerConsumer", "AsyncIO.ProducerConsumer\AsyncIO.ProducerConsumer.csproj", "{2935EF33-B718-44FF-A6D5-8697EAD64873}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncIO.ProducerConsumer", "AsyncIO.ProducerConsumer\AsyncIO.ProducerConsumer.csproj", "{2935EF33-B718-44FF-A6D5-8697EAD64873}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncIO.DemoConsole", "AsyncIO.DemoConsole\AsyncIO.DemoConsole.csproj", "{CF5C4B2E-3C84-4CE0-B5A2-D0B8A9270F1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncIO.DemoConsole", "AsyncIO.DemoConsole\AsyncIO.DemoConsole.csproj", "{CF5C4B2E-3C84-4CE0-B5A2-D0B8A9270F1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

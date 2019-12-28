@@ -17,17 +17,17 @@ namespace AsyncIO.ProducerConsumer
     /// <summary>
     /// Producer-Consumer scheduler.
     /// </summary>
-    internal class Scheduler
+    internal sealed class Scheduler
     {
         private readonly ILogger logger;
         private readonly IProducerFactory producerFactory;
         private readonly IConsumerFactory consumerFactory;
         private readonly object operations = new object();
 
-        private int producersLeft = 0;
-        private long discardCount = 0;
         private long producerCount = 0;
         private long consumerCount = 0;
+        private long discardProducerCount = 0;
+        private long discardConsumerCount = 0;
         private IEnumerable<IProducer> producers;
         private IEnumerable<IConsumer> consumers;
         private CancellationTokenSource cancellationTokenSource;
@@ -91,11 +91,11 @@ namespace AsyncIO.ProducerConsumer
                 this.cancellationTokenSource = new CancellationTokenSource();
                 if (this.producerFactory == null)
                 {
-                    Task.Run(async () => await this.StartSchedule(this.cancellationTokenSource.Token));
+                    this.StartSchedule(this.cancellationTokenSource.Token);
                 }
                 else
                 {
-                    Task.Run(async () => await this.StartSchedule(this.producerFactory, this.consumerFactory, this.cancellationTokenSource.Token));
+                    this.StartSchedule(this.producerFactory, this.consumerFactory, this.cancellationTokenSource.Token);
                 }
             }
         }
@@ -119,152 +119,184 @@ namespace AsyncIO.ProducerConsumer
             }
         }
 
-        private async Task StartSchedule(CancellationToken token)
+        private void StartSchedule(CancellationToken token)
         {
-            this.logger?.LogInformation($"{this.LogName}: {this.producers.Count()} Producers found!");
-            this.logger?.LogInformation($"{this.LogName}: {this.consumers.Count()} Consumers found!");
-
-            int alsoConsumers = this.producers.Where(x => x is IConsumer).Select(x => x as IConsumer).Count();
-            int alsoProducers = this.consumers.Where(x => x is IProducer).Select(x => x as IProducer).Count();
-            if (alsoConsumers > 0 || alsoProducers > 0)
+            if (this.logger != null)
             {
-                var count = alsoConsumers + alsoProducers;
-                this.logger?.LogInformation($"{this.LogName}: {count} detected as both, but will not be added - if needed try with factories!");
+                this.logger.LogInformation($"{this.LogName}: {this.producers.Count()} Producers found!");
+                this.logger.LogInformation($"{this.LogName}: {this.consumers.Count()} Consumers found!");
+
+                int alsoConsumers = this.producers.Where(x => x is IConsumer).Count();
+                int alsoProducers = this.consumers.Where(x => x is IProducer).Count();
+                if (alsoConsumers > 0 || alsoProducers > 0)
+                {
+                    var count = alsoConsumers + alsoProducers;
+                    this.logger.LogInformation($"{this.LogName}: {count} detected as both, but will not be added - if needed try with factories!");
+                }
             }
 
-            await this.Schedule(token);
+            this.Schedule(token);
         }
 
-        private async Task StartSchedule(IProducerFactory producerFactory, IConsumerFactory consumerFactory, CancellationToken token)
+        private void StartSchedule(IProducerFactory producerFactory, IConsumerFactory consumerFactory, CancellationToken token)
         {
             var producers = Enumerable.Range(0, this.Configuration.ProducerCount).Select(_ => producerFactory.GetProducer()).ToList();
-            this.logger?.LogInformation($"{this.LogName}: {producers.Count} Producers has created!");
-
             var consumers = Enumerable.Range(0, this.Configuration.ConsumerCount).Select(_ => consumerFactory.GetConsumer()).ToList();
-            this.logger?.LogInformation($"{this.LogName}: {consumers.Count} Consumers has created!");
-
             var alsoConsumers = producers.Where(x => x is IConsumer).Select(x => x as IConsumer).ToList();
             var alsoProducers = consumers.Where(x => x is IProducer).Select(x => x as IProducer).ToList();
-            if (alsoConsumers.Count > 0 || alsoProducers.Count > 0)
+
+            if (this.logger != null)
             {
-                var count = alsoConsumers.Count + alsoProducers.Count;
-                this.logger?.LogInformation($"{this.LogName}: {count} detected as both and added!");
+                this.logger.LogInformation($"{this.LogName}: {producers.Count} Producers has created!");
+                this.logger.LogInformation($"{this.LogName}: {consumers.Count} Consumers has created!");
+                if (alsoConsumers.Count > 0 || alsoProducers.Count > 0)
+                {
+                    var count = alsoConsumers.Count + alsoProducers.Count;
+                    this.logger.LogInformation($"{this.LogName}: {count} detected as both and added!");
+                }
             }
 
             this.producers = producers.Concat(alsoProducers);
             this.consumers = consumers.Concat(alsoConsumers);
-
-            await this.Schedule(token);
+            this.Schedule(token);
         }
 
-        private async Task Schedule(CancellationToken token)
+        private void Schedule(CancellationToken token)
         {
             this.logger?.LogInformation($"{this.LogName}: Starting producers and consumers!");
-            var buffer = new ProducerConsumerBuffer(this.Configuration.MaxBufferedElements);
 
-            this.producersLeft = this.producers.Count();
-            this.StartLogPerformance(buffer, token);
-            var producerTasks = this.producers.Select(x => this.StartProducer(x, buffer, token));
-            var consumerTasks = this.consumers.Select(x => this.StartConsumer(x, buffer, token));
+            Task.Run(() =>
+            {
+                var buffer = new ProducerConsumerBuffer();
+                this.StartDetectCompletion(buffer, token);
+                this.StartLogPerformance(buffer, token);
 
-            await Task.WhenAll(producerTasks.Concat(consumerTasks));
+                this.consumers
+                    .AsParallel()
+                    .WithDegreeOfParallelism(this.consumers.Count())
+                    .Select(x => this.StartConsumer(x, buffer, token).ConfigureAwait(false))
+                    .ToList();
 
-            this.logger?.LogInformation($"{this.LogName}: Completed execution by stop!");
-            this.OnCompleted?.Invoke(this, EventArgs.Empty);
+                this.producers
+                    .AsParallel()
+                    .WithDegreeOfParallelism(this.producers.Count())
+                    .Select(x => this.StartProducer(x, buffer, token).ConfigureAwait(false))
+                    .ToList();
+            }).ConfigureAwait(false);
         }
 
         private async Task StartProducer(IProducer producer, ProducerConsumerBuffer buffer, CancellationToken token)
         {
-            await Task.Run(() =>
+            while (!token.IsCancellationRequested && producer.ProducerState != State.Completed)
             {
-                producer.OnCompleted += this.Producer_OnCompleted;
-                while (!token.IsCancellationRequested)
+                if (await producer.Produce(token) is object item)
                 {
-                    buffer.AddItem(producer.Produce(token), token);
-                    Interlocked.Increment(ref this.producerCount);
+                    buffer.AddItem(item, token);
+                    if (this.Configuration.LogPerfomance)
+                    {
+                        Interlocked.Increment(ref this.producerCount);
+                    }
                 }
-            }).ConfigureAwait(false);
+                else if (this.Configuration.LogPerfomance)
+                {
+                    Interlocked.Increment(ref this.discardProducerCount);
+                }
+            }
         }
 
         private async Task StartConsumer(IConsumer consumer, ProducerConsumerBuffer buffer, CancellationToken token)
         {
-            await Task.Run(() =>
+            while (!token.IsCancellationRequested && consumer.ConsumerState != State.Completed)
             {
-                while (!token.IsCancellationRequested)
+                var item = await buffer.GetItem(token);
+                if (consumer.CanConsume(item))
                 {
-                    consumer.State = ConsumerState.Waiting;
-                    var item = buffer.GetItem(token);
-                    consumer.State = ConsumerState.Busy;
-                    if (consumer.CanConsume(item))
+                    consumer.Consume(item, token);
+                    if (this.Configuration.LogPerfomance)
                     {
-                        consumer.Consume(item, token);
                         Interlocked.Increment(ref this.consumerCount);
                     }
-                    else
-                    {
-                        Interlocked.Increment(ref this.discardCount);
-                    }
                 }
-            }).ConfigureAwait(false);
-        }
-
-        private async void Producer_OnCompleted(object sender, EventArgs e)
-        {
-            if (Interlocked.Decrement(ref this.producersLeft) == 0)
-            {
-                await this.DetectWaiting();
+                else if (this.Configuration.LogPerfomance)
+                {
+                    Interlocked.Increment(ref this.discardConsumerCount);
+                }
             }
         }
 
-        private async Task DetectWaiting()
+        private void StartDetectCompletion(ProducerConsumerBuffer buffer, CancellationToken token)
         {
-            while (!this.consumers.All(x => x.State == ConsumerState.Waiting))
+            new Thread(() => this.DetectCompletion(buffer, token))
             {
-                await Task.Delay(50);
+                IsBackground = true,
+            }.Start();
+        }
+
+        private void DetectCompletion(ProducerConsumerBuffer buffer, CancellationToken token)
+        {
+            while ((this.producers.Any(x => x.ProducerState != State.Completed) ||
+                    (buffer.Count > 0 && this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
+                !token.IsCancellationRequested)
+            {
+                Thread.Sleep(1);
             }
 
-            foreach (var consumer in this.consumers)
+            if (token.IsCancellationRequested)
             {
-                consumer.State = ConsumerState.Completed;
+                this.logger?.LogInformation($"{this.LogName}: Completed execution by stop!");
+            }
+            else
+            {
+                foreach (var consumer in this.consumers)
+                {
+                    consumer.ConsumerState = State.Completed;
+                    consumer.Finish();
+                }
+
+                this.logger?.LogInformation($"{this.LogName}: Completed execution as all producers and consumers has finished their job!");
             }
 
-            this.logger?.LogInformation($"{this.LogName}: Completed execution as all producers and consumers has finished their job!");
             this.OnCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         private void StartLogPerformance(ProducerConsumerBuffer buffer, CancellationToken token)
         {
-            if (this.Configuration.LogPerfomance)
+            if (this.logger != null && this.Configuration.LogPerfomance)
             {
-                var log = new Thread(() => this.LogPerformance(buffer, token))
+                new Thread(() => this.LogPerformance(buffer, token))
                 {
                     IsBackground = true,
-                    Priority = ThreadPriority.Highest,
-                };
-
-                log.Start();
+                    Priority = ThreadPriority.Lowest,
+                }.Start();
             }
         }
 
         private void LogPerformance(ProducerConsumerBuffer buffer, CancellationToken token)
         {
             int sleep = this.Configuration.LogPerfomanceMs;
-            long lastDiscard = 0, lastProducer = 0, lastConsumer = 0;
-            long perDiscard = 0, perProducer = 0, perConsumer = 0;
             double ratio = 1000.0 / sleep;
 
-            while (!token.IsCancellationRequested)
+            long lastProducer, lastDiscardProducer,
+                lastConsumer, lastDiscardConsumer,
+                perProducer, perProducerDiscard,
+                perConsumer, perConsumerDiscard;
+
+            while ((this.producers.Any(x => x.ProducerState != State.Completed) ||
+                    (buffer.Count > 0 && this.consumers.Any(x => x.ConsumerState != State.Completed))) &&
+                !token.IsCancellationRequested)
             {
-                lastDiscard = this.discardCount;
                 lastProducer = this.producerCount;
                 lastConsumer = this.consumerCount;
+                lastDiscardProducer = this.discardProducerCount;
+                lastDiscardConsumer = this.discardConsumerCount;
 
                 Thread.Sleep(sleep);
-                perDiscard = (long)(ratio * (this.discardCount - lastDiscard));
                 perProducer = (long)(ratio * (this.producerCount - lastProducer));
                 perConsumer = (long)(ratio * (this.consumerCount - lastConsumer));
+                perProducerDiscard = (long)(ratio * (this.discardProducerCount - lastDiscardProducer));
+                perConsumerDiscard = (long)(ratio * (this.discardConsumerCount - lastDiscardConsumer));
 
-                this.logger?.LogInformation($"{this.LogName}: Produce/s: {perProducer} Consume/s: {perConsumer} Discard/s: {perDiscard} Buffer: {buffer.Count}");
+                this.logger.LogInformation($"{this.LogName}: Produce/s: {perProducer} Discard/s: {perProducerDiscard} Consume/s: {perConsumer} Discard/s: {perConsumerDiscard}  Buffer: {buffer.Count}");
             }
         }
     }

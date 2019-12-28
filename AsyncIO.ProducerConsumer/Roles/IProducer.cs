@@ -6,6 +6,8 @@ namespace AsyncIO.ProducerConsumer.Roles
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
+    using AsyncIO.ProducerConsumer.Models;
 
     /// <summary>
     /// Provides interface for producers.
@@ -13,15 +15,15 @@ namespace AsyncIO.ProducerConsumer.Roles
     public interface IProducer
     {
         /// <summary>
-        /// Event that fires when producing completed.
+        /// Gets or sets consumer state.
         /// </summary>
-        event EventHandler OnCompleted;
+        State ProducerState { get; set; }
 
         /// <summary>
         /// Produces an item.
         /// </summary>
         /// <returns>Item.</returns>
         /// <param name="token">Cancellation token.</param>
-        object Produce(CancellationToken token);
+        Task<object> Produce(CancellationToken token);
     }
 }

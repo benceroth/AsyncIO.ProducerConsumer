@@ -24,7 +24,7 @@ namespace AsyncIO.ProducerConsumer
         /// <param name="producerFactory">Producer factory that creates producers.</param>
         /// <param name="consumerFactory">Consumer factory that creates consumers.</param>
         /// <param name="logger">Injectable logger.</param>
-        public Mediator(IProducerFactory producerFactory, IConsumerFactory consumerFactory, ILogger logger)
+        public Mediator(IProducerFactory producerFactory, IConsumerFactory consumerFactory, ILogger logger = null)
         {
             producerFactory = producerFactory ?? throw new ArgumentNullException(nameof(producerFactory));
             consumerFactory = consumerFactory ?? throw new ArgumentNullException(nameof(consumerFactory));
@@ -39,7 +39,7 @@ namespace AsyncIO.ProducerConsumer
         /// <param name="producers">Producers.</param>
         /// <param name="consumers">Consumers.</param>
         /// <param name="logger">Injectable logger.</param>
-        public Mediator(IEnumerable<IProducer> producers, IEnumerable<IConsumer> consumers, ILogger logger)
+        public Mediator(IEnumerable<IProducer> producers, IEnumerable<IConsumer> consumers, ILogger logger = null)
         {
             producers = producers ?? throw new ArgumentNullException(nameof(producers));
             consumers = consumers ?? throw new ArgumentNullException(nameof(consumers));

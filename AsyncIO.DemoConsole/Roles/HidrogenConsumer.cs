@@ -13,5 +13,10 @@ namespace AsyncIO.DemoConsole.Roles
         public override void Consume(Hidrogen item, CancellationToken token)
         {
         }
+
+        public override void Finish()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

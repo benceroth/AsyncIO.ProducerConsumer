@@ -8,6 +8,7 @@ namespace AsyncIO.ProducerConsumer.Roles
     using System.Collections.Generic;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
     using AsyncIO.ProducerConsumer.Models;
 
     /// <inheritdoc />
@@ -16,15 +17,15 @@ namespace AsyncIO.ProducerConsumer.Roles
         where TConsume : class
     {
         /// <inheritdoc />
-        public event EventHandler OnCompleted;
+        public State ProducerState { get; set; } = State.Busy;
 
         /// <inheritdoc />
-        public ConsumerState State { get; set; } = ConsumerState.Waiting;
+        public State ConsumerState { get; set; } = State.Busy;
 
         /// <inheritdoc />
-        object IProducer.Produce(CancellationToken token)
+        async Task<object> IProducer.Produce(CancellationToken token)
         {
-            return this.Produce(token);
+            return await this.Produce(token);
         }
 
         /// <inheritdoc />
@@ -44,7 +45,7 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// </summary>
         /// <returns>Item.</returns>
         /// <param name="token">Cancellation token.</param>
-        public abstract TProduce Produce(CancellationToken token);
+        public abstract Task<TProduce> Produce(CancellationToken token);
 
         /// <summary>
         /// Consumes an item.
@@ -52,5 +53,7 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// <param name="item">T Item.</param>
         /// <param name="token">Cancellation token.</param>
         public abstract void Consume(TConsume item, CancellationToken token);
+
+        public abstract void Finish();
     }
 }

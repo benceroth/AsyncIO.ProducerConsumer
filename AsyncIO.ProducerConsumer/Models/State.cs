@@ -1,4 +1,4 @@
-﻿// <copyright file="ConsumerState.cs" company="PlaceholderCompany">
+﻿// <copyright file="State.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -11,13 +11,8 @@ namespace AsyncIO.ProducerConsumer.Models
     /// <summary>
     /// Provides consumer states.
     /// </summary>
-    public enum ConsumerState
+    public enum State
     {
-        /// <summary>
-        /// Consumer is waiting for item.
-        /// </summary>
-        Waiting,
-
         /// <summary>
         /// Consumer is consuming an item.
         /// </summary>
