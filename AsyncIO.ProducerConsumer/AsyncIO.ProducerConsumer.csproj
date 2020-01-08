@@ -13,7 +13,9 @@
     <NeutralLanguage>en</NeutralLanguage>
     <PackageTags>csharp, dotnet, async, parallel, multi-threading, producer, consumer, producer-consumer, pattern</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.0.5</Version>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <FileVersion>1.0.7.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
