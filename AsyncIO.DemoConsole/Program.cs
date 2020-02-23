@@ -52,7 +52,7 @@ namespace AsyncIO.DemoConsole
         static void StartLinkedMediator()
         {
             var producers = new IProducer[] { new HidrogenProducer(), new HidrogenProducer(), new OxigenProducer() };
-            var consumers = Enumerable.Range(0, 10).Select(x => new WaterProducer()).ToList();
+            var consumers = Enumerable.Range(0, 5).Select(x => new WaterProducer()).ToList();
 
             var producers2 = consumers.Select(x => x as IProducer);
             var consumers2 = new IConsumer[] { new WaterConsumer() };

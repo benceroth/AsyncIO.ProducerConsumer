@@ -165,22 +165,19 @@ namespace AsyncIO.ProducerConsumer
         {
             this.logger?.LogInformation($"{this.LogName}: Starting producers and consumers!");
 
-            Task.Run(() =>
-            {
-                var buffer = new ProducerConsumerBuffer();
-                this.StartDetectCompletion(buffer, token);
-                this.StartLogPerformance(buffer, token);
+            var buffer = new ProducerConsumerBuffer();
+            this.StartDetectCompletion(buffer, token);
+            this.StartLogPerformance(buffer, token);
 
-                this.consumers
-                    .AsParallel()
-                    .Select(x => this.StartConsumer(x, buffer, token).ConfigureAwait(false))
-                    .ToList();
+            this.consumers
+                .AsParallel()
+                .Select(x => this.StartConsumer(x, buffer, token).ConfigureAwait(false))
+                .ToList();
 
-                this.producers
-                    .AsParallel()
-                    .Select(x => this.StartProducer(x, buffer, token).ConfigureAwait(false))
-                    .ToList();
-            }).ConfigureAwait(false);
+            this.producers
+                .AsParallel()
+                .Select(x => this.StartProducer(x, buffer, token).ConfigureAwait(false))
+                .ToList();
         }
 
         private async Task StartProducer(IProducer producer, ProducerConsumerBuffer buffer, CancellationToken token)
@@ -221,6 +218,7 @@ namespace AsyncIO.ProducerConsumer
             new Thread(() => this.DetectCompletion(buffer, token))
             {
                 IsBackground = true,
+                Priority = ThreadPriority.AboveNormal,
             }.Start();
         }
 
