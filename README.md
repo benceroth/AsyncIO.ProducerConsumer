@@ -23,7 +23,7 @@ PM> Install-Package AsyncIO.ProducerConsumer
 
 ## Building
 
-Compilation requires an up-to-date .NET Standard 2.0 SDK and running the DemoConsole additionally requires .NET Core 3.1+ as well.
+Compilation requires an up-to-date .NET 8.0 SDK.
 
 ## License
 
