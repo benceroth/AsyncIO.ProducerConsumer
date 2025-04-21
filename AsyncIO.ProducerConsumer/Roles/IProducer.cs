@@ -4,7 +4,6 @@
 
 namespace AsyncIO.ProducerConsumer.Roles
 {
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using AsyncIO.ProducerConsumer.Models;

@@ -1,8 +1,5 @@
 ﻿using AsyncIO.DemoConsole.Models;
 using AsyncIO.ProducerConsumer.Roles;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,9 +7,10 @@ namespace AsyncIO.DemoConsole.Roles
 {
     class HidrogenProducer : Producer<Hidrogen>
     {
-        public override Task<Hidrogen> Produce(CancellationToken token)
+        public override async Task<Hidrogen> Produce(CancellationToken token)
         {
-            return Task.FromResult(new Hidrogen());
+            await Task.Delay(0, token);
+            return new Hidrogen();
         }
     }
 }

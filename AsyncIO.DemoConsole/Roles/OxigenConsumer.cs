@@ -1,8 +1,5 @@
 ﻿using AsyncIO.DemoConsole.Models;
 using AsyncIO.ProducerConsumer.Roles;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
@@ -13,7 +10,7 @@ namespace AsyncIO.DemoConsole.Roles
         {
         }
 
-        public override void Finish()
+        public override void Cleanup()
         {
         }
     }

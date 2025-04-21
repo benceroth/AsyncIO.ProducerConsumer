@@ -5,17 +5,15 @@
 namespace AsyncIO.ProducerConsumer.Models
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Threading;
     using System.Threading.Tasks;
-    using HellBrick.Collections;
 
     /// <summary>
     /// Provides a buffer producers consumers.
     /// </summary>
     internal class ProducerConsumerBuffer
     {
-        private readonly AsyncQueue<object> requests;
+        private readonly IAsyncQueue<object> requests;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProducerConsumerBuffer"/> class.

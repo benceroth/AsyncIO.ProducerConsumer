@@ -1,10 +1,6 @@
 ﻿using AsyncIO.DemoConsole.Models;
 using AsyncIO.ProducerConsumer.Models;
 using AsyncIO.ProducerConsumer.Roles;
-using HellBrick.Collections;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +8,8 @@ namespace AsyncIO.DemoConsole.Roles
 {
     class WaterProducer : ProducerConsumer<Water, Element>
     {
-        private readonly AsyncQueue<Oxigen> oxigens = new AsyncQueue<Oxigen>();
-        private readonly AsyncQueue<Hidrogen> hidrogens = new AsyncQueue<Hidrogen>();
+        private readonly AsyncQueue<Oxigen> oxigens = [];
+        private readonly AsyncQueue<Hidrogen> hidrogens = [];
 
         public override bool CanConsume(object item)
         {
@@ -32,10 +28,8 @@ namespace AsyncIO.DemoConsole.Roles
             }
         }
 
-        public override void Finish()
+        public override void Cleanup()
         {
-            this.oxigens.Add(null);
-            this.hidrogens.Add(null);
         }
 
         public override async Task<Water> Produce(CancellationToken token)

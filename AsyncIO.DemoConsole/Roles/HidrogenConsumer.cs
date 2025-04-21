@@ -1,9 +1,6 @@
-﻿using AsyncIO.ProducerConsumer.Models;
-using AsyncIO.ProducerConsumer.Roles;
+﻿using AsyncIO.ProducerConsumer.Roles;
 using AsyncIO.DemoConsole.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace AsyncIO.DemoConsole.Roles
@@ -14,7 +11,7 @@ namespace AsyncIO.DemoConsole.Roles
         {
         }
 
-        public override void Finish()
+        public override void Cleanup()
         {
             throw new NotImplementedException();
         }

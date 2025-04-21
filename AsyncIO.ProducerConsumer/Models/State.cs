@@ -4,10 +4,6 @@
 
 namespace AsyncIO.ProducerConsumer.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     /// <summary>
     /// Provides consumer states.
     /// </summary>

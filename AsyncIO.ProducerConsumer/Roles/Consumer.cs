@@ -4,11 +4,7 @@
 
 namespace AsyncIO.ProducerConsumer.Roles
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Threading;
-    using System.Threading.Tasks;
     using AsyncIO.ProducerConsumer.Models;
 
     /// <inheritdoc />
@@ -37,6 +33,9 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// <param name="token">Cancellation token.</param>
         public abstract void Consume(TConsume item, CancellationToken token);
 
-        public abstract void Finish();
+        /// <summary>
+        /// Called once at the end of the run for cleanup.
+        /// </summary>
+        public abstract void Cleanup();
     }
 }

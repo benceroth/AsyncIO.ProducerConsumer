@@ -5,7 +5,6 @@
 namespace AsyncIO.ProducerConsumer.Roles
 {
     using System.Threading;
-    using System.Threading.Tasks;
     using AsyncIO.ProducerConsumer.Models;
 
     /// <summary>
@@ -35,6 +34,6 @@ namespace AsyncIO.ProducerConsumer.Roles
         /// <summary>
         /// Finishes consuming.
         /// </summary>
-        void Finish();
+        void Cleanup();
     }
 }

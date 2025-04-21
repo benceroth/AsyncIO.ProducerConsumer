@@ -22,7 +22,7 @@ namespace AsyncIO.ProducerConsumer
         private readonly ILogger logger;
         private readonly IProducerFactory producerFactory;
         private readonly IConsumerFactory consumerFactory;
-        private readonly object operations = new object();
+        private readonly object operations = new();
 
         private long producerCount = 0;
         private long consumerCount = 0;
@@ -43,8 +43,10 @@ namespace AsyncIO.ProducerConsumer
             this.logger = logger;
             this.producerFactory = producerFactory;
             this.consumerFactory = consumerFactory;
-            this.Configuration = new Configuration();
-            this.Configuration.LogName = $"#{this.GetHashCode()}";
+            this.Configuration = new Configuration
+            {
+                LogName = $"#{this.GetHashCode()}",
+            };
         }
 
         /// <summary>
@@ -58,8 +60,10 @@ namespace AsyncIO.ProducerConsumer
             this.logger = logger;
             this.producers = producers;
             this.consumers = consumers;
-            this.Configuration = new Configuration();
-            this.Configuration.LogName = $"#{this.GetHashCode()}";
+            this.Configuration = new Configuration
+            {
+                LogName = $"#{this.GetHashCode()}",
+            };
         }
 
         /// <summary>
@@ -166,18 +170,33 @@ namespace AsyncIO.ProducerConsumer
             this.logger?.LogInformation($"{this.LogName}: Starting producers and consumers!");
 
             var buffer = new ProducerConsumerBuffer();
-            this.StartDetectCompletion(buffer, token);
+            this.StartDetectCompletion(token);
             this.StartLogPerformance(buffer, token);
+            this.StartProducerConsumers(buffer, token);
+        }
 
-            this.consumers
-                .AsParallel()
-                .Select(x => this.StartConsumer(x, buffer, token).ConfigureAwait(false))
-                .ToList();
+        private void StartProducerConsumers(ProducerConsumerBuffer buffer, CancellationToken token)
+        {
+            new Thread(async () =>
+            {
+                var tasks = new List<Task>();
 
-            this.producers
-                .AsParallel()
-                .Select(x => this.StartProducer(x, buffer, token).ConfigureAwait(false))
-                .ToList();
+                tasks.AddRange(this.consumers
+                    .AsParallel()
+                    .Select(x => this.StartConsumer(x, buffer, token))
+                    .ToList());
+
+                tasks.AddRange(this.producers
+                    .AsParallel()
+                    .Select(x => this.StartProducer(x, buffer, token))
+                    .ToList());
+
+                await Task.WhenAll();
+            })
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.AboveNormal,
+            }.Start();
         }
 
         private async Task StartProducer(IProducer producer, ProducerConsumerBuffer buffer, CancellationToken token)
@@ -213,16 +232,16 @@ namespace AsyncIO.ProducerConsumer
             }
         }
 
-        private void StartDetectCompletion(ProducerConsumerBuffer buffer, CancellationToken token)
+        private void StartDetectCompletion(CancellationToken token)
         {
-            new Thread(() => this.DetectCompletion(buffer, token))
+            new Thread(() => this.DetectCompletion(token))
             {
                 IsBackground = true,
                 Priority = ThreadPriority.AboveNormal,
             }.Start();
         }
 
-        private void DetectCompletion(ProducerConsumerBuffer buffer, CancellationToken token)
+        private void DetectCompletion(CancellationToken token)
         {
             while ((this.producers.Any(x => x.ProducerState != State.Completed) ||
                     (this.producerCount > this.consumerCount + this.discardConsumerCount &&
@@ -238,13 +257,13 @@ namespace AsyncIO.ProducerConsumer
             }
             else
             {
-                foreach (var consumer in this.consumers)
-                {
-                    consumer.ConsumerState = State.Completed;
-                    consumer.Finish();
-                }
-
                 this.logger?.LogInformation($"{this.LogName}: Completed execution as all producers and consumers has finished their job!");
+            }
+
+            foreach (var consumer in this.consumers)
+            {
+                consumer.ConsumerState = State.Completed;
+                consumer.Cleanup();
             }
 
             this.OnCompleted?.Invoke(this, EventArgs.Empty);
